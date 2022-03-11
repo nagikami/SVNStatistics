@@ -1,5 +1,6 @@
 package com.nagi.entity;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -7,7 +8,8 @@ public class CommitRecord {
     private long revision;
     private List<CommitFile> files;
     private Set<String> filteredFiles;
-    private double sum = 0;
+    private int[] sum;
+    private Date date;
 
     public long getRevision() {
         return revision;
@@ -33,12 +35,19 @@ public class CommitRecord {
         this.filteredFiles = filteredFiles;
     }
 
-    public double getSum() {
+    public int[] getSum() {
         return sum;
     }
 
-    public void setSum(double sum) {
+    public void setSum(int[] sum) {
         this.sum = sum;
     }
 
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
 }

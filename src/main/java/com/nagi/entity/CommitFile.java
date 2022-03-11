@@ -5,9 +5,10 @@ import java.util.Date;
 public class CommitFile {
     private String filePath;
     private Character changeType;
-    private double codeCount;
+    private int addCount;
     private double factor;
-    private Date date;
+
+    private int delCount;
 
     public Character getChangeType() {
         return changeType;
@@ -17,12 +18,20 @@ public class CommitFile {
         this.changeType = changeType;
     }
 
-    public double getCodeCount() {
-        return codeCount;
+    public int getAddCount() {
+        return addCount;
     }
 
-    public void setCodeCount(double codeCount) {
-        this.codeCount = codeCount;
+    public void setAddCount(int addCount) {
+        this.addCount = addCount;
+    }
+
+    public int getDelCount() {
+        return delCount;
+    }
+
+    public void setDelCount(int delCount) {
+        this.delCount = delCount;
     }
 
     public String getFilePath() {
@@ -39,13 +48,5 @@ public class CommitFile {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 }

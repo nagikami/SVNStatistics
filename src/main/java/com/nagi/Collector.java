@@ -89,7 +89,8 @@ public class Collector {
             commitRecord.setFiles(commitFiles);
             commitRecord.setRevision(logEntry.getRevision());
 
-            double sum = 0;
+            int add = 0;
+            int del = 0;
             if (logEntry.getChangedPaths().size() > 0) {
                 for (String s : logEntry.getChangedPaths().keySet()) {
                     if (fileFilter.filterByDirectory(directories.split(","), s) || fileFilter.filterByExtension(types.split(","), s)) {
@@ -99,13 +100,15 @@ public class Collector {
                     CommitFile commitFile = new CommitFile();
                     commitFile.setFilePath(s);
                     commitFile.setChangeType(logEntry.getChangedPaths().get(s).getType());
-                    commitFile.setDate(logEntry.getDate());
                     commitFile.setFactor(fileEvaluator.evaluateByDirectory(getMap(directoriesMap), s) * fileEvaluator.evaluateByExtension(getMap(extensionsMap), s));
-                    sum += statisticsCodeAdd(getChangeLog(commitFile, logEntry.getRevision()), commitFile);
+                    int[] result = statisticsCodeAdd(getChangeLog(commitFile, logEntry.getRevision()), commitFile);
+                    add += result[0];
+                    del += result[1];
                     commitFiles.add(commitFile);
                 }
             }
-            commitRecord.setSum(sum);
+            commitRecord.setDate(logEntry.getDate());
+            commitRecord.setSum(new int[] {add, del});
         }
     }
 
@@ -119,24 +122,27 @@ public class Collector {
         return map;
     }
 
-    public double statisticsCodeAdd(File file, CommitFile commitFile) throws Exception {
+    public int[] statisticsCodeAdd(File file, CommitFile commitFile) throws Exception {
         FileReader fileReader = new FileReader(file);
         BufferedReader in = new BufferedReader(fileReader);
-        double sum = 0;
+        int add = 0;
+        int del = 0;
         String line;
         StringBuilder content = new StringBuilder(1024);
         while ((line = in.readLine()) != null) {
             content.append(line).append('\n');
         }
         if (content.length() > 0) {
-            sum = staticOneFileChange(commitFile, content.toString());
+            int[] result = staticOneFileChange(commitFile, content.toString());
+            add = result[0];
+            del = result[1];
         }
         in.close();
         fileReader.close();
         file.delete();
-        sum *= commitFile.getFactor();
-        commitFile.setCodeCount(sum);
-        return sum;
+        commitFile.setAddCount(add);
+        commitFile.setDelCount(del);
+        return new int[] {add, del};
     }
 
     public File getChangeLog(CommitFile commitFile, long version) {
@@ -170,31 +176,37 @@ public class Collector {
         return tempLogFile;
     }
 
-    public int staticOneFileChange(CommitFile commitFile, String fileContent) {
+    public int[] staticOneFileChange(CommitFile commitFile, String fileContent) {
         char changeType = commitFile.getChangeType();
         if (changeType == 'A') {
-            return countAddLine(fileContent);
+            return countModifyLine(fileContent);
         } else if (changeType == 'M') {
-            return countAddLine(fileContent);
+            return countModifyLine(fileContent);
         }
-        return 0;
+        return new int[] {0 ,0};
     }
 
-    public int countAddLine(String content) {
+    public int[] countModifyLine(String content) {
         content = content.substring(content.indexOf("@@\n") + 3);
-        int sum = 0;
+        int add = 0;
+        int del = 0;
         if (StringUtils.isNotBlank(content)) {
-            content = "a" + '\n' + content + '\n';
+            content = '\n' + content + '\n';
             char[] chars = content.toCharArray();
             int len = chars.length;
             boolean startPlus = false;
+            boolean startDel = false;
             boolean notSpace = false;
 
             for (int i = 0; i < len; i++) {
                 char ch = chars[i];
                 if (ch == '\n') {
                     if (startPlus && notSpace) {
-                        sum++;
+                        add++;
+                        notSpace = false;
+                    }
+                    if (startDel && notSpace) {
+                        del++;
                         notSpace = false;
                     }
                     if (i < len - 1 && chars[i + 1] == '+') {
@@ -203,13 +215,18 @@ public class Collector {
                     } else {
                         startPlus = false;
                     }
-                } else if (startPlus && ch > ' ') {
+                    if (i < len - 1 && chars[i + 1] == '-') {
+                        startDel = true;
+                        i++;
+                    } else {
+                        startDel = false;
+                    }
+                } else if ((startPlus || startDel) && ch > ' ') {
                     notSpace = true;
                 }
             }
         }
-
-        return sum;
+        return new int[] {add, del};
     }
 
 
