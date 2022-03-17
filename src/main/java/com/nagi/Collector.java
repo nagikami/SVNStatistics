@@ -38,7 +38,7 @@ public class Collector {
 
     private String directories = "/myProject/test,/myProject/target";
 
-    private String types = "xml";
+    private String extensions = "xml";
 
     private String directoriesMap = "demo:3";
     private String extensionsMap = "java:2,py:3";
@@ -93,14 +93,22 @@ public class Collector {
             int del = 0;
             if (logEntry.getChangedPaths().size() > 0) {
                 for (String s : logEntry.getChangedPaths().keySet()) {
-                    if (fileFilter.filterByDirectory(directories.split(","), s) || fileFilter.filterByExtension(types.split(","), s)) {
+                    if ((StringUtils.isNotBlank(directories) && fileFilter.filterByDirectory(directories.split(","), s)) ||
+                            (StringUtils.isNotBlank(extensions) && fileFilter.filterByExtension(extensions.split(","), s))) {
                         commitRecord.getFilteredFiles().add(s);
                         continue;
                     }
                     CommitFile commitFile = new CommitFile();
                     commitFile.setFilePath(s);
                     commitFile.setChangeType(logEntry.getChangedPaths().get(s).getType());
-                    commitFile.setFactor(fileEvaluator.evaluateByDirectory(getMap(directoriesMap), s) * fileEvaluator.evaluateByExtension(getMap(extensionsMap), s));
+                    double factor = 1;
+                    if (StringUtils.isNotBlank(directoriesMap)) {
+                        factor *= fileEvaluator.evaluateByDirectory(getMap(directoriesMap), s);
+                    }
+                    if (StringUtils.isNotBlank(extensionsMap)) {
+                        factor *= fileEvaluator.evaluateByExtension(getMap(extensionsMap), s);
+                    }
+                    commitFile.setFactor(factor);
                     int[] result = statisticsCodeAdd(getChangeLog(commitFile, logEntry.getRevision()), commitFile);
                     add += result[0];
                     del += result[1];
