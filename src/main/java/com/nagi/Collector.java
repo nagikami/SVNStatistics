@@ -1,6 +1,7 @@
 package com.nagi;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.nagi.entity.CommitFile;
 import com.nagi.entity.CommitRecord;
 import com.nagi.entity.User;
@@ -242,6 +243,6 @@ public class Collector {
         Collector collector = new Collector();
         collector.init();
         collector.collect();
-        System.out.println(JSON.toJSONString(collector.users, true));
+        System.out.println(JSONArray.toJSONString(collector.users.values(), true));
     }
 }
