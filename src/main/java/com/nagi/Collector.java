@@ -118,6 +118,7 @@ public class Collector {
             }
             commitRecord.setDate(logEntry.getDate());
             commitRecord.setSum(new int[] {add, del});
+            commitRecord.setMessage(logEntry.getMessage());
         }
     }
 

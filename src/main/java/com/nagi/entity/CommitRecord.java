@@ -10,6 +10,7 @@ public class CommitRecord {
     private Set<String> filteredFiles;
     private int[] sum;
     private Date date;
+    private String message;
 
     public long getRevision() {
         return revision;
@@ -49,5 +50,13 @@ public class CommitRecord {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
