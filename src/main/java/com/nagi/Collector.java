@@ -244,6 +244,6 @@ public class Collector {
         Collector collector = new Collector();
         collector.init();
         collector.collect();
-        System.out.println(JSONArray.toJSONString(collector.users.values(), true));
+        System.out.println(JSON.toJSONString(collector.users.values(), true));
     }
 }
